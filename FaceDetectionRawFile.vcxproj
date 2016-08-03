@@ -42,6 +42,10 @@
     <IncludePath>$(OPEN_CV)\include;$(IncludePath)</IncludePath>
     <LibraryPath>$(OPEN_CV)\x86\vc12\bin;$(OPEN_CV)\x86\vc12\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <IncludePath>$(OPEN_CV)\include;$(IncludePath)</IncludePath>
+    <LibraryPath>$(OPEN_CV)\x86\vc12\bin;$(OPEN_CV)\x86\vc12\lib;$(LibraryPath)</LibraryPath>
+  </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>

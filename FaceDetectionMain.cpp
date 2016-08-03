@@ -11,14 +11,44 @@
 
 using namespace std;
 using namespace cv;
+#define BLOCK_SIZE 16
 
+//Function to map the face region
+int generateFaceMapFile(ofstream &mapfile, int x, int y, int width, int height, int FrameWidth, int FrameHeight)
+{
+	
+	//Open map file, Face region is stored in following format
+	//16x16 blocks are scanned in raster scan order and 1 byte is store if with
+	// value = 0x00 if no face, or 0xff if face is found
+	int indX, indY;
+	unsigned char is_face = 0x00;
+	for (indY = 0; indY < (int)(FrameHeight / BLOCK_SIZE); indY++)
+	{
+		for (indX = 0; indX < (int)(FrameWidth / BLOCK_SIZE); indX++)
+		{
+			//enter one byte in raster scan order based on presence of ROI/ non-ROI
+			//When face is not detected in the frame, x,y, height, width are passes as zero to indicate absence of face
+			if ((indX * BLOCK_SIZE) >= x && (indY * BLOCK_SIZE) >= y && (indX * BLOCK_SIZE) < (x + width) && (indY * BLOCK_SIZE) < (y + height) && height > 0 && width > 0)
+			{
+				is_face = 0xff;
+			}
+			else
+			{
+				is_face = 0x00;
+			}
+			mapfile.write((char * )&is_face, sizeof(is_face));
+		}
+	}
+	return 0;
+}
 int main(int argc, char** argv)
 {
 	Mat img;
 	ifstream raw_file;
-	ofstream outfile, statfile;
+	ofstream outfile, statfile,mapfile;
 	int width, height;
 
+	mapfile.open("E:/Sequence/mapfile.bin", ios::out | ios::binary | ios::trunc);
 
 	if (argc != 4)
 	{
@@ -27,11 +57,13 @@ int main(int argc, char** argv)
 	}
 	raw_file.open(argv[1], ios::in | ios::binary);//open the raw video file and read frame by frame
 	statfile.open("E:/Sequence/stat1.txt", ios::out | ios::trunc);
+
 	width = atoi(argv[2]);
 	height = atoi(argv[3]);
 
 	//outfile to store output file with face detected
 	outfile.open("E:/Sequence/out1.raw", ios::out | ios::binary | ios::trunc);
+
 	int frame_size = width * height * 3;//assuming rgb24 format
 	//char framebuf[width * height * 3], bgr_buf[width * height * 3];
 	char * framebuf = (char *)malloc(frame_size);
@@ -75,9 +107,11 @@ int main(int argc, char** argv)
 		if (faces.size() > 0)
 		{
 			statfile << faces[0].x << " " << faces[0].y << " " << faces[0].height << " " << faces[0].width << "\n";
+			generateFaceMapFile(mapfile,faces[0].x, faces[0].y, faces[0].width, faces[0].height, width, height);
 		}
 		else
 		{
+			generateFaceMapFile(mapfile, 0, 0, 0, 0, width, height);
 			statfile << "NA\n";
 		}
 		// Draw circles on the detected faces
@@ -101,6 +135,7 @@ int main(int argc, char** argv)
 	free(bgr_buf);
 	outfile.close();
 	raw_file.close();
+	mapfile.close();
 	/*
 	img = cvLoadImage(argv[1]);
 	imshow("Detected Face", img);*/
