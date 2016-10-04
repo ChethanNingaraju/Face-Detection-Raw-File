@@ -1,5 +1,5 @@
 # FaceDetectionRawFile
-Detects face and marks it. The input and output will be raw video.
+Face Detection on raw video. Uses OpenCV to detect face directly on raw video in BGR 24 bit format.
 
 Input: RGB24 bit video format
 Output: Face recognized video raw file, 
