@@ -47,22 +47,23 @@ int main(int argc, char** argv)
 	ifstream raw_file;
 	ofstream outfile, statfile,mapfile;
 	int width, height;
+	int prev_frame_data[4] = { 0, 0, 0, 0 };
 
-	mapfile.open("E:/Sequence/mapfile.bin", ios::out | ios::binary | ios::trunc);
+	mapfile.open("./mapfile.bin", ios::out | ios::binary | ios::trunc);
 
 	if (argc != 4)
 	{
-		printf("Enter the image file name");
+		printf("USAGE: <.exe> <raw_file in rgb format> <width> <height>\n");
 		exit(0);
 	}
 	raw_file.open(argv[1], ios::in | ios::binary);//open the raw video file and read frame by frame
-	statfile.open("E:/Sequence/stat1.txt", ios::out | ios::trunc);
+	statfile.open("./stat1.txt", ios::out | ios::trunc);
 
 	width = atoi(argv[2]);
 	height = atoi(argv[3]);
 
 	//outfile to store output file with face detected
-	outfile.open("E:/Sequence/out1.raw", ios::out | ios::binary | ios::trunc);
+	outfile.open("./out1.raw", ios::out | ios::binary | ios::trunc);
 
 	int frame_size = width * height * 3;//assuming rgb24 format
 	//char framebuf[width * height * 3], bgr_buf[width * height * 3];
@@ -103,17 +104,27 @@ int main(int argc, char** argv)
 
 		// Detect faces
 		std::vector<Rect> faces;
-		face_cascade.detectMultiScale(img, faces, 1.1, 2, 0, Size(60, 80));
+		face_cascade.detectMultiScale(img, faces, 1.1, 2, 0, Size(90, 90));
 		if (faces.size() > 0)
 		{
 			statfile << faces[0].x << " " << faces[0].y << " " << faces[0].height << " " << faces[0].width << "\n";
 			generateFaceMapFile(mapfile,faces[0].x, faces[0].y, faces[0].width, faces[0].height, width, height);
+			prev_frame_data[0] = faces[0].x;
+			prev_frame_data[1] = faces[0].y;
+			prev_frame_data[2] = faces[0].width;
+			prev_frame_data[3] = faces[0].height;
 		}
 		else
 		{
-			generateFaceMapFile(mapfile, 0, 0, 0, 0, width, height);
+			//if current frame has no data, copy previous frame data
+			if (prev_frame_data[2] == 0 && prev_frame_data[3] == 0 )
+				generateFaceMapFile(mapfile, 0, 0, 0, 0, width, height);
+			else
+				generateFaceMapFile(mapfile, prev_frame_data[0], prev_frame_data[1], prev_frame_data[2], prev_frame_data[3], width, height);
 			statfile << "NA\n";
 		}
+
+
 		// Draw circles on the detected faces
 		for (size_t i = 0; i < ((faces.size() > 1) ? faces.size() : faces.size()); i++)
 		{
