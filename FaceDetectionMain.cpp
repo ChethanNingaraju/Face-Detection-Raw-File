@@ -104,7 +104,7 @@ int main(int argc, char** argv)
 
 		// Detect faces
 		std::vector<Rect> faces;
-		face_cascade.detectMultiScale(img, faces, 1.1, 2, 0, Size(90, 90));
+		face_cascade.detectMultiScale(img, faces, 1.1, 5, 0 | CASCADE_SCALE_IMAGE, Size(100, 100));
 		if (faces.size() > 0)
 		{
 			statfile << faces[0].x << " " << faces[0].y << " " << faces[0].height << " " << faces[0].width << "\n";
@@ -121,7 +121,7 @@ int main(int argc, char** argv)
 				generateFaceMapFile(mapfile, 0, 0, 0, 0, width, height);
 			else
 				generateFaceMapFile(mapfile, prev_frame_data[0], prev_frame_data[1], prev_frame_data[2], prev_frame_data[3], width, height);
-			statfile << "NA\n";
+			statfile << prev_frame_data[0] << " " << prev_frame_data[1] << " " << prev_frame_data[2] << " " << prev_frame_data[3] << "\n";
 		}
 
 
@@ -151,6 +151,6 @@ int main(int argc, char** argv)
 	img = cvLoadImage(argv[1]);
 	imshow("Detected Face", img);*/
 
-	system("pause");
+	//system("pause");
 	return 0;
 }
